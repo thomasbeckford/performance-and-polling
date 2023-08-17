@@ -8,7 +8,11 @@ const data: number[] = Array.from({ length: 1000 }, (_, index) => index)
 const VirtualizedComponent: React.FC = () => {
   const rowRenderer: ListRowRenderer = ({ index, key, style }) => {
     return (
-      <div key={key} style={style}>
+      <div
+        key={key}
+        style={style}
+        className="bg-blue-500 border-2 flex justify-center items-center"
+      >
         {data[index]}
       </div>
     )
@@ -18,10 +22,10 @@ const VirtualizedComponent: React.FC = () => {
     <List
       width={300}
       height={500}
-      rowHeight={30}
+      rowHeight={50}
       rowRenderer={rowRenderer}
       rowCount={data.length}
-      className="mx-auto"
+      className="mx-auto  "
     />
   )
 }

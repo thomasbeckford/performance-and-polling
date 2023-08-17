@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Button from '@/components/ui/Button'
 
 async function fetchData() {
   const res = await fetch('https://jsonplaceholder.typicode.com/todos/1', {
@@ -20,17 +21,28 @@ const OptimizedPollingComponent = () => {
   const [pollingStatus, setPollingStatus] = useState<PollingStatus>(
     PollingStatus.STOPPED
   )
+  const [message, setMessage] = useState<string>('')
+
   const [data, setData] = useState<any>(null)
 
   const fetchPollingValue = async () => {
     try {
       const response = await fetchData()
 
-      // Update the polling value
       setData(response)
+      setMessage('Polled successfully. ')
     } catch (error) {
       console.error('Error fetching polling value:', error)
+      setMessage('Error while polling.')
+      if (error) {
+        return error
+      }
     }
+
+    // Clear the message after 0.5 seconds
+    setTimeout(() => {
+      setMessage('Polling again...')
+    }, 1000)
   }
 
   useEffect(() => {
@@ -65,13 +77,11 @@ const OptimizedPollingComponent = () => {
     <div>
       {/* Display the polling value */}
       <p>Polling Value: {data?.title}</p>
+      <p>Status: {message}</p>
 
-      <button
-        onClick={handleTogglePolling}
-        className="px-2 text-md border bg-blue-500 cursor-pointer"
-      >
+      <Button onClick={handleTogglePolling}>
         {pollingStatus === PollingStatus.POLLING ? 'Stop' : 'Start'}
-      </button>
+      </Button>
     </div>
   )
 }

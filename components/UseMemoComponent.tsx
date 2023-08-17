@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useMemo, useCallback } from 'react'
 import { Product } from '@/interfaces'
+import Button from '@/components/ui/Button'
 
 interface UseMemoComponentProps {
   data: number[]
@@ -55,18 +56,11 @@ const UseMemoComponent: React.FC<UseMemoComponentProps> = ({
         ))}
       </ul>
       <div className="flex justify-center gap-5 m-10">
-        <button
-          className="bg-blue-500 border px-2 py-1 rounded-md"
-          onClick={handleRecalculateData}
-        >
+        <Button color="secondary" onClick={handleRecalculateData}>
           Expensive operation (recalculate data)
-        </button>
-        <button
-          className="bg-green-500 border px-2 py-1 rounded-md"
-          onClick={handleClick}
-        >
-          <p>Button clicked: {count} times</p>
-        </button>
+        </Button>
+
+        <Button onClick={handleClick}>Button clicked: {count} times</Button>
       </div>
     </div>
   )

@@ -4,6 +4,9 @@ import UseMemoComponent from '@/components/UseMemoComponent'
 import MemoizedComponent from '@/components/MemoizedComponent'
 import RegularComponent from '@/components/RegularComponent'
 import memoizedFactorial from '@/functions/memoizedFactorial'
+import { calculateFactorial } from '@/functions/memoizedFactorial'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 import { useState } from 'react'
 import { Product } from '@/interfaces'
@@ -16,15 +19,21 @@ const products: Product[] = [
 
 export default function Home() {
   const [dataProducts, setDataProducts] = useState<Product[]>(products)
-  const [count, setCount] = useState(0)
-  const [calculatedFactorial, setCalculatedFactorial] = useState<number | null>(
-    null
-  )
+  const [memoCount, setMemoCount] = useState(0)
 
-  const handleFactorial = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = Number(e.currentTarget.value)
-    const result = memoizedFactorial(value)
-    setCalculatedFactorial(result)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const inputValue = parseInt((e.target as any).elements.factorial.value)
+
+    // Without memoization
+    console.time('Without Memoization')
+    calculateFactorial(inputValue)
+    console.timeEnd('Without Memoization')
+
+    // With memoization
+    console.time('With Memoization')
+    memoizedFactorial(inputValue)
+    console.timeEnd('With Memoization')
   }
 
   return (
@@ -37,48 +46,57 @@ export default function Home() {
           Strategies and Best Practices (check clg)
         </h2>
       </div>
-      <div className="flex flex-col md:flex-row md:justify-center gap-3">
-        <div className="flex flex-col gap-3">
-          <div className="border border-white text-center p-5">
-            <h1 className="text-xl font-bold">useCallback and useMemo</h1>
+
+      <Card title="Important">
+        <p>
+          To check each functionality, open the console and click on the buttons
+          below.
+        </p>
+      </Card>
+      <div className="flex flex-col md:flex-row md:justify-center gap-3 ">
+        <div className="flex flex-col gap-3 flex-1">
+          <Card title="useCallback and useMemo">
             <UseMemoComponent
               data={dataProducts.map((product) => product.price)}
               setDataProducts={setDataProducts}
             />
-          </div>
-          <div className="border border-white text-center p-5">
-            <h1 className="text-xl font-bold">Virtualized List</h1>
+          </Card>
+          <Card title="Virtualized List Component">
+            <p>
+              This component is recycling rows, it only renders the visible
+              items, when you scroll down it reuses the components that are not
+              visible anymore.
+            </p>
             <VirtualizedComponent />
-          </div>
+          </Card>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div className="border border-white text-center p-5">
-            <h1 className="text-xl font-bold">Memo Component</h1>
-            <button
-              className="bg-blue-500 border px-2 py-1 rounded-md"
-              onClick={() => setCount(count + 1)}
-            >
+        <div className="flex flex-col gap-3 flex-1">
+          <Card title="Memo Component">
+            <Button onClick={() => setMemoCount(memoCount + 1)}>
               Increment Count
-            </button>
+            </Button>
             <span className="flex gap-2 justify-center">
-              Regular: <RegularComponent value={count} />
+              Regular: <RegularComponent value={memoCount} />
             </span>
             <span className="flex gap-2 justify-center">
-              Memoized: <MemoizedComponent value={count} />
+              Memoized: <MemoizedComponent value={memoCount} />
             </span>
-          </div>
-          <div className="border border-white text-center p-5">
-            <h1 className="text-xl font-bold ">
-              Memoized Factorial Using Lodash
-            </h1>
-            <button onClick={handleFactorial} value={5}>
-              Calculate Factorial of 5
-            </button>
-            {calculatedFactorial !== null && (
-              <p>Factorial of 5: {calculatedFactorial}</p>
-            )}
-          </div>
+          </Card>
+
+          <Card title="Memoized Factorial">
+            <form onSubmit={handleSubmit}>
+              <input
+                type="string"
+                name="factorial"
+                className="text-black block mx-auto mb-5 rounded text-lg"
+                maxLength={2}
+              />
+              <Button color="secondary" type="submit">
+                Calculate Factorial
+              </Button>
+            </form>
+          </Card>
         </div>
       </div>
     </main>
