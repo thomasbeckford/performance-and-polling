@@ -47,10 +47,12 @@ const OptimizedPollingComponent = () => {
 
   useEffect(() => {
     if (pollingStatus === PollingStatus.STOPPED) {
+      setMessage('Polling stopped.')
       return
     }
 
     if (pollingStatus === PollingStatus.ENQUEUED) {
+      setMessage('Polling enqueued.')
       return
     }
 
