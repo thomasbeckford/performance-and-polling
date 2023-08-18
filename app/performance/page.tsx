@@ -24,6 +24,10 @@ export default function Home() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const inputValue = parseInt((e.target as any).elements.factorial.value)
+    if (isNaN(inputValue)) {
+      alert('Please enter a valid number')
+      return
+    }
 
     // Without memoization
     console.time('Without Memoization')
