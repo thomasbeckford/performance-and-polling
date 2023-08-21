@@ -1,4 +1,4 @@
-## React JS 
+## NextJS, React, Quirrel, Redis
 
 ### 1. Optimizing Performance in React JS for Handling Massive Data
 
