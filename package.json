@@ -3,29 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently 'next dev' 'quirrel' 'pnpm run start-redis' 'pnpm run seed'",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "node --experimental-modules ./lib/redis.ts",
+    "start-redis": "redis-server --daemonize yes"
   },
   "dependencies": {
     "@types/node": "20.5.0",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
-    "@types/socket.io": "^3.0.2",
     "autoprefixer": "10.4.15",
+    "concurrently": "^8.2.0",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.17",
-    "http": "0.0.1-security",
     "lodash": "^4.17.21",
     "next": "13.4.17",
     "postcss": "8.4.28",
+    "quirrel": "^1.14.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-virtualized": "^9.22.5",
-    "socket.io": "^4.7.2",
     "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "@upstash/redis": "1.20.6"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.197",

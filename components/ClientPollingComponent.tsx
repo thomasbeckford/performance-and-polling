@@ -1,91 +1,100 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import Button from '@/components/ui/Button'
-
-async function fetchData() {
-  const res = await fetch('https://jsonplaceholder.typicode.com/todos/1', {
-    next: { tags: ['collection'] },
-  })
-  const data = await res.json()
-  console.log('data', data)
-  return data
-}
-
-enum PollingStatus {
-  POLLING = 'POLLING',
-  STOPPED = 'STOPPED',
-  ENQUEUED = 'ENQUEUED',
-}
+import { QueueStatus } from '@/interfaces'
+import { useContext } from 'react'
+import { AppContext } from '@/providers/AppProvider'
 
 const OptimizedPollingComponent = () => {
-  const [pollingStatus, setPollingStatus] = useState<PollingStatus>(
-    PollingStatus.STOPPED
-  )
-  const [message, setMessage] = useState<string>('')
-
-  const [data, setData] = useState<any>(null)
+  const {
+    queueStatus,
+    handleTogglePolling,
+    setPurchaseReady,
+    purchaseReady,
+    setQueueStatus,
+    handleCheckout,
+    handleLeaveCheckout,
+  } = useContext(AppContext)
 
   const fetchPollingValue = async () => {
     try {
-      const response = await fetchData()
+      if (queueStatus === QueueStatus.NOT_IN_QUEUE) {
+        return
+      }
+      const response = await checkAvailability(queueStatus)
+      if (response) {
+        if (response.status === QueueStatus.TICKET_AVAILABLE) {
+          // Backend response triggers stop polling
+          setPurchaseReady(true)
+          setQueueStatus(QueueStatus.NOT_IN_QUEUE)
+        }
 
-      setData(response)
-      setMessage('Polled successfully. ')
+        if (queueStatus === QueueStatus.START_POLLING) {
+          // Manually trigger polling
+
+          setQueueStatus(QueueStatus.ENQUEUED)
+        }
+      }
     } catch (error) {
       console.error('Error fetching polling value:', error)
-      setMessage('Error while polling.')
+      setQueueStatus(QueueStatus.NOT_IN_QUEUE)
       if (error) {
         return error
       }
     }
-
-    // Clear the message after 0.5 seconds
-    setTimeout(() => {
-      setMessage('Polling again...')
-    }, 1000)
   }
 
   useEffect(() => {
-    if (pollingStatus === PollingStatus.STOPPED) {
-      setMessage('Polling stopped.')
-      return
-    }
-
-    if (pollingStatus === PollingStatus.ENQUEUED) {
-      setMessage('Polling enqueued.')
-      return
-    }
-
     fetchPollingValue()
-
     const intervalId = setInterval(fetchPollingValue, 2000)
-
     return () => {
       clearInterval(intervalId)
     }
-  }, [pollingStatus])
-
-  const handleTogglePolling = () => {
-    setPollingStatus((prevPollingStatus) => {
-      if (prevPollingStatus === PollingStatus.POLLING) {
-        return PollingStatus.STOPPED
-      }
-
-      return PollingStatus.POLLING
-    })
-  }
+  }, [queueStatus])
 
   return (
     <div>
-      {/* Display the polling value */}
-      <p>Polling Value: {data?.title}</p>
-      <p>Status: {message}</p>
+      <p>Status: {queueStatus}</p>
 
-      <Button onClick={handleTogglePolling}>
-        {pollingStatus === PollingStatus.POLLING ? 'Stop' : 'Start'}
-      </Button>
+      {purchaseReady ? (
+        <div>
+          <Button onClick={handleCheckout} color="secondary">
+            Purchase ticket
+          </Button>
+          <Button onClick={handleLeaveCheckout} color="danger">
+            Cancel purchase
+          </Button>
+        </div>
+      ) : (
+        <Button onClick={handleTogglePolling}>
+          {queueStatus === QueueStatus.ENQUEUED ? 'Stop' : 'Start'}
+        </Button>
+      )}
     </div>
   )
 }
 
 export default OptimizedPollingComponent
+
+async function checkAvailability(purchaseStatus: QueueStatus) {
+  const userData = {
+    name: 'John Doe',
+    id: '1234567890',
+  }
+
+  const pollingApi =
+    purchaseStatus === QueueStatus.ENQUEUED
+      ? '/api/queue/enqueued'
+      : purchaseStatus === QueueStatus.START_POLLING
+      ? '/api/queue/start'
+      : '/api/queue/stop'
+
+  const res = await fetch(pollingApi, {
+    method: 'POST',
+    body: JSON.stringify({ userData }),
+  })
+
+  const data = await res.json()
+
+  return data
+}
